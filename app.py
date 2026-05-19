@@ -23,21 +23,22 @@ def crear_cita():
         conn = get_connection()
         cursor = conn.cursor()
 
-        # Insertar cliente
         cursor.execute(
             "INSERT INTO clientes (nombre, correo, telefono) VALUES (%s, %s, %s)",
             (data["cliente"]["nombre"], data["cliente"]["correo"], data["cliente"]["telefono"])
         )
         cliente_id = cursor.lastrowid
 
-        # Insertar cita con el cliente recién creado
+
+        estado = data.get("estado", "pendiente")
+
         cursor.execute(
             "INSERT INTO citas (cliente_id, fecha, hora, estado) VALUES (%s, %s, %s, %s)",
-            (cliente_id, data["fecha"], data["hora"], data["estado"])
+            (cliente_id, data["fecha"], data["hora"], estado)
         )
         cita_id = cursor.lastrowid
 
-        # Insertar servicios seleccionados
+        
         for s in data.get("servicios", []):
             if "id" in s:
                 cursor.execute(
@@ -49,7 +50,7 @@ def crear_cita():
         cursor.close()
         conn.close()
 
-        return jsonify({"ok": True, "cita_id": cita_id, "cliente_id": cliente_id}), 201
+        return jsonify({"ok": True, "cita_id": cita_id, "cliente_id": cliente_id, "estado": estado}), 201
 
     except Exception as e:
         return jsonify({"error": str(e)}), 400
